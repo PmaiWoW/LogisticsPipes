@@ -44,7 +44,6 @@ import network.rs485.logisticspipes.guidebook.BookContents
 import network.rs485.logisticspipes.guidebook.BookContents.MAIN_MENU_FILE
 import network.rs485.logisticspipes.util.math.Rectangle
 import network.rs485.markdown.*
-import network.rs485.markdown.MarkdownParser.splitToInlineElements
 import java.util.*
 
 const val DEBUG_AREAS = false
@@ -57,15 +56,15 @@ internal val HEADER_LEVELS = listOf(2.0, 1.80, 1.60, 1.40, 1.20, 1.00)
 /**
  * Image token, stores a token list in case the image is not correctly loaded as well as the image's path
  * @param textTokens this is the alt text, only used in case the image provided via the URL fails to load.
- *
+ * TODO
  */
-data class DrawableImageParagraph(val textTokens: List<DrawableWord>, val imageParameters: String) : IDrawable {
-    // TODO
+class DrawableImageParagraph(parent: Drawable, val textTokens: List<DrawableWord>, val imageParameters: String) : Drawable(parent) {
     private val image: ResourceLocation
     private var imageAvailable: Boolean
 
-    override val area = Rectangle(0, 0)
-    override var isHovered = false
+    override fun draw(mouseX: Int, mouseY: Int, delta: Float, visibleArea: Rectangle) {
+        TODO("Not yet implemented")
+    }
 
     init {
         val parameters = imageParameters.split(" ")
@@ -73,76 +72,52 @@ data class DrawableImageParagraph(val textTokens: List<DrawableWord>, val imageP
         imageAvailable = true
     }
 
-    override fun setPos(x: Int, y: Int, maxWidth: Int): Int {
+    override fun setPos(x: Int, y: Int): Int {
         area.setPos(x, y)
-        return area.height
-    }
-}
-
-/**
- * This draws a line with a given thickness that will span the entire width of the page, minus padding.
- */
-
-data class DrawableHorizontalLine(val thickness: Int, val padding: Int = 3) : IDrawable {
-    override val area = Rectangle(0, 2 * padding + thickness)
-    override var isHovered = false
-
-    override fun setPos(x: Int, y: Int, maxWidth: Int): Int {
-        area.setPos(x, y)
-        area.setSize(maxWidth, area.height)
-        return area.height + padding
-    }
-
-    override fun draw(mouseX: Int, mouseY: Int, delta: Float, yOffset: Int, visibleArea: Rectangle) {
-        if (DEBUG_AREAS) area.translated(0, -yOffset).render(0.0f, 0.0f, 0.0f)
-        if (visibleArea.overlaps(area.translated(0, -yOffset))) GuiGuideBook.drawHorizontalLine(area.x0 + padding, area.x1 - padding, area.y0 + padding - yOffset, 5.0, thickness, MinecraftColor.WHITE.colorCode)
+        return super.setPos(x, y)
     }
 }
 
 /**
  * List token, has several items that are shown in a list.
  */
-data class DrawableListParagraph(val entries: List<List<DrawableWord>>) : IDrawable {
-    override val area: Rectangle = Rectangle()
-    override var isHovered = false
+class DrawableListParagraph(parent: Drawable, val entries: List<List<DrawableWord>>) : DrawableParagraph(parent) {
+    override fun setChildrenPos(): Int {
+        TODO("Not yet implemented")
+    }
 
-    override fun setPos(x: Int, y: Int, maxWidth: Int): Int {
+    override fun drawChildren(mouseX: Int, mouseY: Int, delta: Float, visibleArea: Rectangle) {
+        TODO("Not yet implemented")
+    }
+
+    override fun draw(mouseX: Int, mouseY: Int, delta: Float, visibleArea: Rectangle) {
+        TODO("Not yet implemented")
+    }
+
+    override fun setPos(x: Int, y: Int): Int {
         TODO("Not yet implemented")
     }
 }
 
-private fun toDrawables(elements: List<InlineElement>, scale: Double) = DEFAULT_DRAWABLE_STATE.copy().let { state ->
+internal fun toDrawables(parent: Drawable, elements: List<InlineElement>, scale: Double) = DEFAULT_DRAWABLE_STATE.copy().let { state ->
     elements.mapNotNull { element ->
         element.changeDrawableState(state)
         when (element) {
-            is Word -> DrawableWord(element.str, scale, state)
-            is Space -> DrawableSpace(scale, state)
+            is Word -> DrawableWord(parent, element.str, scale, state)
+            is Space -> DrawableSpace(parent, scale, state)
             Break -> DrawableBreak
             else -> null
         }
     }
 }
 
-private fun toDrawable(paragraph: Paragraph): IDrawable = when (paragraph) {
-    is RegularParagraph -> DrawableRegularParagraph(toDrawables(paragraph.elements, 1.0))
-    is HeaderParagraph -> DrawableHeaderParagraph(toDrawables(paragraph.elements, getScaleFromLevel(paragraph.headerLevel)), paragraph.headerLevel)
-    is HorizontalLineParagraph -> DrawableHorizontalLine(2)
-    is MenuParagraph -> DrawableMenuParagraph(toDrawables(splitToInlineElements(paragraph.description), getScaleFromLevel(3)), toMenuGroups(definingPage.metadata.menu[paragraph.link]
-            ?: error("Requested menu ${paragraph.link}, not found."))) // TODO have the current page path here to get the proper menu
+private fun toDrawable(parent: Drawable, paragraph: Paragraph): Drawable = when (paragraph) {
+    is RegularParagraph -> DrawableRegularParagraph(parent, paragraph.elements)
+    is HeaderParagraph -> DrawableHeaderParagraph(parent, paragraph.elements, paragraph.headerLevel)
+    is HorizontalLineParagraph -> DrawableHorizontalLine(parent, 2)
+    is MenuParagraph -> DrawableMenuParagraph(parent, paragraph.description, definingPage.metadata.menu[paragraph.link]?: error("Requested menu ${paragraph.link}, not found.")) // TODO have the current page path here to get the proper menu
 }
 
-fun toMenuGroups(groups: Map<String, List<String>>): List<DrawableMenuTileGroup> {
-    return groups.map {
-        DrawableMenuTileGroup(toDrawables(splitToInlineElements(it.key), getScaleFromLevel(6)), toMenuTiles(it.value))
-    }
-}
-
-fun toMenuTiles(pages: List<String>): List<DrawableMenuTile> {
-    return pages.map {
-        DrawableMenuTile(BookContents.get(it).metadata)
-    }
-}
-
-fun asDrawables(paragraphs: List<Paragraph>) = paragraphs.map(::toDrawable)
+fun asDrawables(parent: Drawable, paragraphs: List<Paragraph>) = paragraphs.map { toDrawable(parent, it) }
 
 fun getScaleFromLevel(headerLevel: Int) = if (headerLevel > 0 && headerLevel < HEADER_LEVELS.size) HEADER_LEVELS[headerLevel - 1] else 1.00

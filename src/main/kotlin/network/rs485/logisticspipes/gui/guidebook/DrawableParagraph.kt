@@ -38,26 +38,26 @@
 package network.rs485.logisticspipes.gui.guidebook
 
 import network.rs485.logisticspipes.util.math.Rectangle
-import network.rs485.markdown.InlineElement
 
-/**
- * Header token, stores all the tokens that are apart of the header.
- */
-class DrawableHeaderParagraph(parent: Drawable, val words: List<InlineElement>, headerLevel: Int = 1) : DrawableParagraph(parent) {
-    val horizontalLine = DrawableHorizontalLine(this, 1)
-    val drawables = toDrawables(this, words, getScaleFromLevel(headerLevel))
+open class DrawableParagraph(parent: Drawable?) : Drawable(parent) {
 
-    override fun draw(mouseX: Int, mouseY: Int, delta: Float, visibleArea: Rectangle) {
-        drawChildren(mouseX, mouseY, delta, visibleArea)
+    override fun setPos(x: Int, y: Int): Int {
+        area.setPos(x, y)
+        area.setSize(newWidth = parent!!.width)
+        area.setSize(newHeight = setChildrenPos())
+        return super.setPos(x, y)
     }
 
-    override fun drawChildren(mouseX: Int, mouseY: Int, delta: Float, visibleArea: Rectangle) {
-        (drawables + horizontalLine).filter { it.visible(visibleArea) }.forEach { it.draw(mouseX, mouseY, delta, visibleArea) }
+    /**
+     * This function is supposed to update the children's position by starting
+     * Y and X placement at 0 and iterating through the children while calculating their placement.
+     * This function is also responsible for updating the Paragraphs height as it directly
+     * depends on the placement of it's children.
+     * @return the height of all the Paragraph's children combined.
+     */
+    open fun setChildrenPos(): Int {
+        return area.height
     }
 
-    override fun setChildrenPos(): Int {
-        var currentY = splitInitialize(drawables, 0, 0, width)
-        currentY += horizontalLine.setPos(0, currentY)
-        return currentY
-    }
+    open fun drawChildren(mouseX: Int, mouseY: Int, delta: Float, visibleArea: Rectangle) {}
 }

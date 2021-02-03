@@ -37,27 +37,22 @@
 
 package network.rs485.logisticspipes.gui.guidebook
 
+import logisticspipes.LogisticsPipes
+import logisticspipes.utils.MinecraftColor
 import network.rs485.logisticspipes.util.math.Rectangle
-import network.rs485.markdown.InlineElement
 
 /**
- * Header token, stores all the tokens that are apart of the header.
+ * This draws a line with a given thickness that will span the entire width of the page, minus padding.
  */
-class DrawableHeaderParagraph(parent: Drawable, val words: List<InlineElement>, headerLevel: Int = 1) : DrawableParagraph(parent) {
-    val horizontalLine = DrawableHorizontalLine(this, 1)
-    val drawables = toDrawables(this, words, getScaleFromLevel(headerLevel))
+
+class DrawableHorizontalLine(parent: Drawable, val thickness: Int, val padding: Int = 3, val color: Int = MinecraftColor.WHITE.colorCode) : Drawable(parent) {
+    override fun setPos(x: Int, y: Int): Int {
+        area.setPos(x + padding, y + padding)
+        area.setSize(parent!!.width - 2 * padding, 2 * padding + thickness)
+        return super.setPos(x, y)
+    }
 
     override fun draw(mouseX: Int, mouseY: Int, delta: Float, visibleArea: Rectangle) {
-        drawChildren(mouseX, mouseY, delta, visibleArea)
+        GuiGuideBook.drawHorizontalLine(left, right, top, 5.0, thickness, color)
     }
-
-    override fun drawChildren(mouseX: Int, mouseY: Int, delta: Float, visibleArea: Rectangle) {
-        (drawables + horizontalLine).filter { it.visible(visibleArea) }.forEach { it.draw(mouseX, mouseY, delta, visibleArea) }
-    }
-
-    override fun setChildrenPos(): Int {
-        var currentY = splitInitialize(drawables, 0, 0, width)
-        currentY += horizontalLine.setPos(0, currentY)
-        return currentY
-    }
-}
+}    

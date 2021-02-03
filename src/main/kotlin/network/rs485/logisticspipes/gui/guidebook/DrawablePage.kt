@@ -37,16 +37,39 @@
 
 package network.rs485.logisticspipes.gui.guidebook
 
-interface IDrawableParagraph : IDrawable {
-    /**
-     * This function is supposed to update the children's position by giving it the start
-     * Y and X placement and iterating through the children while calculating their placement.
-     * This function is also responsible for updating the Paragraphs height as it directly
-     * depends on the placement of it's children.
-     * @param x the X position of the Drawable.
-     * @param y the Y position of the Drawable.
-     * @param maxWidth the the width of the parent, meaning the maximum width the child could have.
-     * @return the height of all the Paragraph's children combined.
-     */
-    fun setChildrenPos(x: Int, y: Int, maxWidth: Int): Int
+import network.rs485.logisticspipes.util.math.Rectangle
+import network.rs485.markdown.Paragraph
+
+private const val PAGE_VERTICAL_PADDING = 5
+
+class DrawablePage(paragraphs: List<Paragraph>) : DrawableParagraph(null) {
+    private val drawableParagraphs = asDrawables(this, paragraphs)
+
+    fun setWidth(width: Int){
+        area.setSize(newWidth = width)
+    }
+
+    override fun setPos(x: Int, y: Int): Int {
+        area.setPos(x, y)
+        area.setSize(newHeight = setChildrenPos())
+        return area.height
+    }
+
+    override fun setChildrenPos(): Int {
+        var currentY = PAGE_VERTICAL_PADDING
+        for (paragraph in drawableParagraphs){
+            currentY += paragraph.setPos(0, currentY)
+        }
+        return PAGE_VERTICAL_PADDING + currentY
+    }
+
+    override fun draw(mouseX: Int, mouseY: Int, delta: Float, visibleArea: Rectangle) {
+        hovered = hovering(mouseX, mouseY, visibleArea)
+        drawChildren(mouseX, mouseY, delta, visibleArea)
+    }
+
+    override fun drawChildren(mouseX: Int, mouseY: Int, delta: Float, visibleArea: Rectangle) {
+        val visibleParagraphs = drawableParagraphs.filter { it.visible(visibleArea) }
+        visibleParagraphs.forEach { it.draw(mouseX, mouseY, delta, visibleArea) }
+    }
 }
