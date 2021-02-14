@@ -40,15 +40,14 @@ package network.rs485.logisticspipes.gui.guidebook
 import logisticspipes.LPConstants
 import logisticspipes.utils.MinecraftColor
 import net.minecraft.util.ResourceLocation
+import network.rs485.logisticspipes.gui.guidebook.Drawable.Companion.createParent
 import network.rs485.logisticspipes.guidebook.BookContents
-import network.rs485.logisticspipes.guidebook.BookContents.MAIN_MENU_FILE
+import network.rs485.logisticspipes.guidebook.YamlPageMetadata
 import network.rs485.logisticspipes.util.math.Rectangle
 import network.rs485.markdown.*
 import java.util.*
 
 const val DEBUG_AREAS = false
-
-var definingPage = BookContents.get(MAIN_MENU_FILE)
 
 internal val DEFAULT_DRAWABLE_STATE = InlineDrawableState(EnumSet.noneOf(TextFormat::class.java), MinecraftColor.WHITE.colorCode)
 internal val HEADER_LEVELS = listOf(2.0, 1.80, 1.60, 1.40, 1.20, 1.00)
@@ -58,7 +57,7 @@ internal val HEADER_LEVELS = listOf(2.0, 1.80, 1.60, 1.40, 1.20, 1.00)
  * @param textTokens this is the alt text, only used in case the image provided via the URL fails to load.
  * TODO
  */
-class DrawableImageParagraph(parent: Drawable, val textTokens: List<DrawableWord>, val imageParameters: String) : Drawable(parent) {
+class DrawableImageParagraph(val textTokens: List<DrawableWord>, val imageParameters: String) : Drawable() {
     private val image: ResourceLocation
     private var imageAvailable: Boolean
 
@@ -81,7 +80,7 @@ class DrawableImageParagraph(parent: Drawable, val textTokens: List<DrawableWord
 /**
  * List token, has several items that are shown in a list.
  */
-class DrawableListParagraph(parent: Drawable, val entries: List<List<DrawableWord>>) : DrawableParagraph(parent) {
+class DrawableListParagraph(val entries: List<List<DrawableWord>>) : DrawableParagraph() {
     override fun setChildrenPos(): Int {
         TODO("Not yet implemented")
     }
@@ -99,25 +98,67 @@ class DrawableListParagraph(parent: Drawable, val entries: List<List<DrawableWor
     }
 }
 
-internal fun toDrawables(parent: Drawable, elements: List<InlineElement>, scale: Double) = DEFAULT_DRAWABLE_STATE.copy().let { state ->
-    elements.mapNotNull { element ->
-        element.changeDrawableState(state)
-        when (element) {
-            is Word -> DrawableWord(parent, element.str, scale, state)
-            is Space -> DrawableSpace(parent, scale, state)
-            Break -> DrawableBreak
-            else -> null
+typealias DrawableWordMap<T> = (List<DrawableWord>) -> T
+
+private fun <T : DrawableParagraph> createDrawableElements(paragraphConstructor: DrawableWordMap<T>, elements: List<InlineElement>, scale: Double) =
+    DEFAULT_DRAWABLE_STATE.copy().let { state ->
+        elements.mapNotNull { element ->
+            element.changeDrawableState(state)
+            when (element) {
+                is Word -> DrawableWord(element.str, scale, state)
+                is Space -> DrawableSpace(scale, state)
+                Break -> DrawableBreak
+                else -> null
+            }
+        }
+    }.let { drawableWords ->
+        drawableWords.createParent { paragraphConstructor(drawableWords) }
+    }
+
+fun createDrawableParagraphs(page: DrawablePage, paragraphs: List<Paragraph>) = paragraphs.map { paragraph ->
+    page.createChild {
+        when (paragraph) {
+            is RegularParagraph -> createDrawableElements(
+                paragraphConstructor = ::DrawableRegularParagraph,
+                elements = paragraph.elements,
+                scale = 1.0
+            )
+            is HeaderParagraph -> createDrawableElements(
+                paragraphConstructor = ::DrawableHeaderParagraph,
+                elements = paragraph.elements,
+                scale = getScaleFromLevel(paragraph.headerLevel)
+            )
+            is HorizontalLineParagraph -> DrawableHorizontalLine(2)
+            is MenuParagraph -> createDrawableElements(
+                paragraphConstructor = { drawableMenuTitle ->
+                    createDrawableMenuParagraph(page.metadataProvider(), paragraph, drawableMenuTitle)
+                },
+                elements = MarkdownParser.splitToInlineElements(paragraph.description),
+                scale = getScaleFromLevel(3)
+            )
         }
     }
 }
 
-private fun toDrawable(parent: Drawable, paragraph: Paragraph): Drawable = when (paragraph) {
-    is RegularParagraph -> DrawableRegularParagraph(parent, paragraph.elements)
-    is HeaderParagraph -> DrawableHeaderParagraph(parent, paragraph.elements, paragraph.headerLevel)
-    is HorizontalLineParagraph -> DrawableHorizontalLine(parent, 2)
-    is MenuParagraph -> DrawableMenuParagraph(parent, paragraph.description, definingPage.metadata.menu[paragraph.link]?: error("Requested menu ${paragraph.link}, not found.")) // TODO have the current page path here to get the proper menu
+private fun createDrawableMenuParagraph(
+    pageMetadata: YamlPageMetadata,
+    paragraph: MenuParagraph,
+    drawableMenuTitle: List<DrawableWord>
+) = (pageMetadata.menu[paragraph.link] ?: error("Requested menu ${paragraph.link}, not found.")).map { (groupTitle: String, groupEntries: List<String>) ->
+    createDrawableElements(
+        paragraphConstructor = { drawableGroupTitle -> createDrawableMenuTileGroup(groupEntries, drawableGroupTitle) },
+        elements = MarkdownParser.splitToInlineElements(groupTitle),
+        scale = getScaleFromLevel(6)
+    )
+}.let { drawableMenuGroups ->
+    drawableMenuGroups.createParent { DrawableMenuParagraph(drawableMenuTitle, drawableMenuGroups) }
 }
 
-fun asDrawables(parent: Drawable, paragraphs: List<Paragraph>) = paragraphs.map { toDrawable(parent, it) }
+private fun createDrawableMenuTileGroup(menuGroupEntries: List<String>, drawableGroupTitle: List<DrawableWord>) =
+    menuGroupEntries.map { path ->
+        BookContents.get(path).metadata.let { metadata -> DrawableMenuTile(metadata.title, metadata.icon) }
+    }.let { drawableMenuTiles ->
+        drawableMenuTiles.createParent { DrawableMenuTileGroup(drawableGroupTitle, drawableMenuTiles) }
+    }
 
 fun getScaleFromLevel(headerLevel: Int) = if (headerLevel > 0 && headerLevel < HEADER_LEVELS.size) HEADER_LEVELS[headerLevel - 1] else 1.00

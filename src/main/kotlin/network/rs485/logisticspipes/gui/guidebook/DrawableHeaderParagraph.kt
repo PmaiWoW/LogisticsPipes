@@ -38,25 +38,23 @@
 package network.rs485.logisticspipes.gui.guidebook
 
 import network.rs485.logisticspipes.util.math.Rectangle
-import network.rs485.markdown.InlineElement
 
 /**
  * Header token, stores all the tokens that are apart of the header.
  */
-class DrawableHeaderParagraph(parent: Drawable, val words: List<InlineElement>, headerLevel: Int = 1) : DrawableParagraph(parent) {
-    val horizontalLine = DrawableHorizontalLine(this, 1)
-    val drawables = toDrawables(this, words, getScaleFromLevel(headerLevel))
+class DrawableHeaderParagraph(private val words: List<DrawableWord>) : DrawableParagraph() {
+    private val horizontalLine = createChild { DrawableHorizontalLine(1) }
 
     override fun draw(mouseX: Int, mouseY: Int, delta: Float, visibleArea: Rectangle) {
         drawChildren(mouseX, mouseY, delta, visibleArea)
     }
 
     override fun drawChildren(mouseX: Int, mouseY: Int, delta: Float, visibleArea: Rectangle) {
-        (drawables + horizontalLine).filter { it.visible(visibleArea) }.forEach { it.draw(mouseX, mouseY, delta, visibleArea) }
+        (this.words + horizontalLine).filter { it.visible(visibleArea) }.forEach { it.draw(mouseX, mouseY, delta, visibleArea) }
     }
 
     override fun setChildrenPos(): Int {
-        var currentY = splitInitialize(drawables, 0, 0, width)
+        var currentY = splitInitialize(this.words, 0, 0, width)
         currentY += horizontalLine.setPos(0, currentY)
         return currentY
     }

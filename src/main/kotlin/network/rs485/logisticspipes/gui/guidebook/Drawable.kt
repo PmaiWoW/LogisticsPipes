@@ -39,9 +39,20 @@ package network.rs485.logisticspipes.gui.guidebook
 
 import network.rs485.logisticspipes.util.math.Rectangle
 
-open class Drawable(internal open val parent: Drawable?) {
+open class Drawable {
+    companion object {
+        /**
+         * Assigns the parent of all children to this.
+         */
+        fun <T: Drawable> List<Drawable>.createParent(parentGetter: () -> T) =
+            parentGetter().also { parentDrawable -> this.forEach { it.parent = parentDrawable } }
+    }
+
     var hovered: Boolean = false
     internal var area: Rectangle = Rectangle()
+
+    var parent: Drawable? = null
+        private set
 
     // Relative positions/size accessors.
     val x: Int get() = area.x0
@@ -56,6 +67,10 @@ open class Drawable(internal open val parent: Drawable?) {
     val bottom: Int get() = top + height
     val absBody: Rectangle get() = Rectangle(left, top, width, height)
 
+    /**
+     * Assigns a new child's parent to this.
+     */
+    fun <T: Drawable> createChild(childGetter: () -> T) = childGetter().also { it.parent = this }
 
     /**
      * This is just like the normal draw functions for minecraft Gui classes but with the added current Y offset.

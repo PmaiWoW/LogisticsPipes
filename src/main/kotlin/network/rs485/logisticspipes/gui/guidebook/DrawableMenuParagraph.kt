@@ -45,10 +45,7 @@ import net.minecraft.client.renderer.RenderHelper
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.util.ResourceLocation
-import network.rs485.logisticspipes.guidebook.BookContents
-import network.rs485.logisticspipes.guidebook.YamlPageMetadata
 import network.rs485.logisticspipes.util.math.Rectangle
-import network.rs485.markdown.MarkdownParser
 
 
 private const val tileSize = 40
@@ -57,11 +54,8 @@ private const val tileSpacing = 5
 /**
  * Menu token, stores the key and the type of menu in a page.
  */
-class DrawableMenuParagraph(parent: Drawable, val description: String, groupsMap: Map<String, List<String>>) : DrawableParagraph(parent) {
-    val menuGroups = toMenuGroups(this, groupsMap)
-
-    val menuTitle = toDrawables(this, MarkdownParser.splitToInlineElements(description), getScaleFromLevel(3))
-    val horizontalLine = DrawableHorizontalLine(this, 1)
+class DrawableMenuParagraph(val menuTitle: List<DrawableWord>, val menuGroups: List<DrawableMenuTileGroup>) : DrawableParagraph() {
+    val horizontalLine = createChild { DrawableHorizontalLine(1) }
 
     override fun draw(mouseX: Int, mouseY: Int, delta: Float, visibleArea: Rectangle) {
         drawChildren(mouseX, mouseY, delta, visibleArea)
@@ -80,10 +74,7 @@ class DrawableMenuParagraph(parent: Drawable, val description: String, groupsMap
     }
 }
 
-class DrawableMenuTileGroup(parent: Drawable, title: String, pages: List<String>) : DrawableParagraph(parent) {
-    val groupTitle = toDrawables(this, MarkdownParser.splitToInlineElements(title), getScaleFromLevel(6))
-    val groupTiles = toMenuTiles(this, pages)
-
+class DrawableMenuTileGroup(val groupTitle: List<DrawableWord>, val groupTiles: List<DrawableMenuTile>) : DrawableParagraph() {
     override fun draw(mouseX: Int, mouseY: Int, delta: Float, visibleArea: Rectangle) {
         drawChildren(mouseX, mouseY, delta, visibleArea)
     }
@@ -109,10 +100,8 @@ class DrawableMenuTileGroup(parent: Drawable, title: String, pages: List<String>
     }
 }
 
-class DrawableMenuTile(parent: Drawable, metadata: YamlPageMetadata) : Drawable(parent) {
-    private val pageName = metadata.title
+class DrawableMenuTile(private val pageName: String, private val icon: String) : Drawable() {
     private val iconScale = 1.0
-    private val icon = metadata.icon
 
     override fun draw(mouseX: Int, mouseY: Int, delta: Float, visibleArea: Rectangle) {
         hovered = hovering(mouseX, mouseY, visibleArea)
@@ -144,18 +133,3 @@ class DrawableMenuTile(parent: Drawable, metadata: YamlPageMetadata) : Drawable(
 
     fun mid(): Int = left + (width / 2)
 }
-
-fun toMenuGroups(parent: Drawable, groups: Map<String, List<String>>): List<DrawableMenuTileGroup> {
-    return groups.map {
-        DrawableMenuTileGroup(parent, it.key, it.value)
-    }
-}
-
-fun toMenuTiles(parent: Drawable, pages: List<String>): List<DrawableMenuTile> {
-    return pages.map {
-        DrawableMenuTile(parent, BookContents.get(it).metadata)
-    }
-}
-
-
-

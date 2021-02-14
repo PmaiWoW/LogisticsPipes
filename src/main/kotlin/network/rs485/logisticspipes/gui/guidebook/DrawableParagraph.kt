@@ -39,7 +39,7 @@ package network.rs485.logisticspipes.gui.guidebook
 
 import network.rs485.logisticspipes.util.math.Rectangle
 
-open class DrawableParagraph(parent: Drawable?) : Drawable(parent) {
+open class DrawableParagraph : Drawable() {
 
     override fun setPos(x: Int, y: Int): Int {
         area.setPos(x, y)

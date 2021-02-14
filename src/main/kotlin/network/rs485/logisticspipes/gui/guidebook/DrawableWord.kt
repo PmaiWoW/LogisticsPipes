@@ -45,7 +45,7 @@ import kotlin.math.floor
 /**
  * Normal Token that stores the text and the formatting tags of said text.
  */
-open class DrawableWord(parent: Drawable?, private val str: String, private val scale: Double, state: InlineDrawableState) : Drawable(parent) {
+open class DrawableWord(private val str: String, private val scale: Double, state: InlineDrawableState) : Drawable() {
     val format: EnumSet<TextFormat> = state.format
     val color: Int = state.color
 
@@ -69,7 +69,7 @@ open class DrawableWord(parent: Drawable?, private val str: String, private val 
 /**
  * Space object responsible for drawing the necessary formatting in between words.
  */
-class DrawableSpace(parent: Drawable, private val scale: Double, state: InlineDrawableState) : DrawableWord(parent," ", scale, state) {
+class DrawableSpace(private val scale: Double, state: InlineDrawableState) : DrawableWord(" ", scale, state) {
     override fun draw(mouseX: Int, mouseY: Int, delta: Float, visibleArea: Rectangle) {
         if (width > 0) GuiGuideBook.lpFontRenderer.drawSpace(x = left, y =top, width = width, color = color, italic = format.italic(), underline = format.underline(), strikethrough = format.strikethrough(), shadow = format.shadow(), scale = scale)
     }
@@ -79,12 +79,12 @@ class DrawableSpace(parent: Drawable, private val scale: Double, state: InlineDr
     }
 }
 
-object DrawableBreak : DrawableWord(null,"", 1.0, DEFAULT_DRAWABLE_STATE)
+object DrawableBreak : DrawableWord("", 1.0, DEFAULT_DRAWABLE_STATE)
 
 /**
  * TODO Link token, stores the linked string, as well as the 'url'.
  */
-class Link(parent: Drawable?, text: String) : DrawableWord(parent, text, 1.0, DEFAULT_DRAWABLE_STATE)
+class Link(text: String) : DrawableWord(text, 1.0, DEFAULT_DRAWABLE_STATE)
 
 internal fun initLine(x: Int, y: Int, line: MutableList<DrawableWord>, justified: Boolean, maxWidth: Int): Int {
     var maxHeight = 0

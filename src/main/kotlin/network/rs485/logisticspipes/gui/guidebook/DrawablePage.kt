@@ -37,13 +37,14 @@
 
 package network.rs485.logisticspipes.gui.guidebook
 
+import network.rs485.logisticspipes.guidebook.YamlPageMetadata
 import network.rs485.logisticspipes.util.math.Rectangle
 import network.rs485.markdown.Paragraph
 
 private const val PAGE_VERTICAL_PADDING = 5
 
-class DrawablePage(paragraphs: List<Paragraph>) : DrawableParagraph(null) {
-    private val drawableParagraphs = asDrawables(this, paragraphs)
+class DrawablePage(paragraphs: List<Paragraph>, internal val metadataProvider: () -> YamlPageMetadata) : DrawableParagraph() {
+    private val drawableParagraphs = createDrawableParagraphs(this, paragraphs)
 
     fun setWidth(width: Int){
         area.setSize(newWidth = width)

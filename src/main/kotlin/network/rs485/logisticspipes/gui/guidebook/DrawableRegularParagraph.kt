@@ -38,14 +38,11 @@
 package network.rs485.logisticspipes.gui.guidebook
 
 import network.rs485.logisticspipes.util.math.Rectangle
-import network.rs485.markdown.InlineElement
 
 /**
  * Stores groups of ITokenText tokens to more easily translate Tokens to Drawable elements
  */
-class DrawableRegularParagraph(parent: Drawable, val words: List<InlineElement>) : DrawableParagraph(parent) {
-    val drawables = toDrawables(this, words, 1.0)
-
+class DrawableRegularParagraph(private val words: List<DrawableWord>) : DrawableParagraph() {
     override fun setPos(x: Int, y: Int): Int {
         area.setPos(x, y)
         area.setSize(parent!!.width, setChildrenPos())
@@ -53,7 +50,7 @@ class DrawableRegularParagraph(parent: Drawable, val words: List<InlineElement>)
     }
 
     override fun setChildrenPos(): Int {
-        return splitInitialize(drawables, 0, 0, width)
+        return splitInitialize(words, 0, 0, width)
     }
 
     override fun draw(mouseX: Int, mouseY: Int, delta: Float, visibleArea: Rectangle) {
@@ -62,7 +59,7 @@ class DrawableRegularParagraph(parent: Drawable, val words: List<InlineElement>)
     }
 
     override fun drawChildren(mouseX: Int, mouseY: Int, delta: Float, visibleArea: Rectangle) {
-        val lines = drawables.groupBy { it.top }.values
+        val lines = words.groupBy { it.top }.values
         // Split by lines
         for (line in lines) {
             // Check if first (representative of the whole line) is visible, aka contained within the visible area.
