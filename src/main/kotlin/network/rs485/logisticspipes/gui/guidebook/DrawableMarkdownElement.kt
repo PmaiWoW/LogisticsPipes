@@ -38,6 +38,7 @@
 package network.rs485.logisticspipes.gui.guidebook
 
 import logisticspipes.LPConstants
+import logisticspipes.LogisticsPipes
 import logisticspipes.utils.MinecraftColor
 import net.minecraft.util.ResourceLocation
 import network.rs485.logisticspipes.gui.guidebook.Drawable.Companion.createParent
@@ -115,7 +116,7 @@ private fun <T : DrawableParagraph> createDrawableElements(paragraphConstructor:
         drawableWords.createParent { paragraphConstructor(drawableWords) }
     }
 
-fun createDrawableParagraphs(page: DrawablePage, paragraphs: List<Paragraph>) = paragraphs.map { paragraph ->
+fun createDrawableParagraphs(page: DrawablePage, paragraphs: List<Paragraph>): List<DrawableParagraph> = paragraphs.map { paragraph ->
     page.createChild {
         when (paragraph) {
             is RegularParagraph -> createDrawableElements(
@@ -156,7 +157,11 @@ private fun createDrawableMenuParagraph(
 
 private fun createDrawableMenuTileGroup(menuGroupEntries: List<String>, drawableGroupTitle: List<DrawableWord>) =
     menuGroupEntries.map { path ->
-        BookContents.get(path).metadata.let { metadata -> DrawableMenuTile(metadata.title, metadata.icon) }
+        BookContents.get(path).metadata.let { metadata ->
+            DrawableMenuTile(metadata.title, metadata.icon, onClick = {
+                LogisticsPipes.log.info("You tried to open $path! $it")
+            })
+        }
     }.let { drawableMenuTiles ->
         drawableMenuTiles.createParent { DrawableMenuTileGroup(drawableGroupTitle, drawableMenuTiles) }
     }

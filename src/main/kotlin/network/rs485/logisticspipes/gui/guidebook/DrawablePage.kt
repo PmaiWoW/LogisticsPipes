@@ -70,7 +70,8 @@ class DrawablePage(paragraphs: List<Paragraph>, internal val metadataProvider: (
     }
 
     override fun drawChildren(mouseX: Int, mouseY: Int, delta: Float, visibleArea: Rectangle) {
-        val visibleParagraphs = drawableParagraphs.filter { it.visible(visibleArea) }
-        visibleParagraphs.forEach { it.draw(mouseX, mouseY, delta, visibleArea) }
+        getVisibleParagraphs(visibleArea).forEach { it.draw(mouseX, mouseY, delta, visibleArea) }
     }
+
+    fun getVisibleParagraphs(visibleArea: Rectangle) = drawableParagraphs.filter { it.visible(visibleArea) }
 }

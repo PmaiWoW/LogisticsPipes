@@ -54,11 +54,15 @@ private const val tileSpacing = 5
 /**
  * Menu token, stores the key and the type of menu in a page.
  */
-class DrawableMenuParagraph(val menuTitle: List<DrawableWord>, val menuGroups: List<DrawableMenuTileGroup>) : DrawableParagraph() {
-    val horizontalLine = createChild { DrawableHorizontalLine(1) }
+class DrawableMenuParagraph(private val menuTitle: List<DrawableWord>, private val menuGroups: List<DrawableMenuTileGroup>) : DrawableParagraph() {
+    private val horizontalLine = createChild { DrawableHorizontalLine(1) }
 
     override fun draw(mouseX: Int, mouseY: Int, delta: Float, visibleArea: Rectangle) {
         drawChildren(mouseX, mouseY, delta, visibleArea)
+    }
+
+    override fun mouseClicked(mouseX: Int, mouseY: Int, mouseButton: Int) {
+        menuGroups.firstOrNull { it.absBody.contains(mouseX, mouseY) }?.mouseClicked(mouseX, mouseY, mouseButton)
     }
 
     override fun setChildrenPos(): Int {
@@ -74,9 +78,13 @@ class DrawableMenuParagraph(val menuTitle: List<DrawableWord>, val menuGroups: L
     }
 }
 
-class DrawableMenuTileGroup(val groupTitle: List<DrawableWord>, val groupTiles: List<DrawableMenuTile>) : DrawableParagraph() {
+class DrawableMenuTileGroup(private val groupTitle: List<DrawableWord>, private val groupTiles: List<DrawableMenuTile>) : DrawableParagraph() {
     override fun draw(mouseX: Int, mouseY: Int, delta: Float, visibleArea: Rectangle) {
         drawChildren(mouseX, mouseY, delta, visibleArea)
+    }
+
+    override fun mouseClicked(mouseX: Int, mouseY: Int, mouseButton: Int) {
+        groupTiles.firstOrNull { it.absBody.contains(mouseX, mouseY) }?.onClick?.invoke(mouseButton)
     }
 
     override fun setChildrenPos(): Int {
@@ -100,7 +108,7 @@ class DrawableMenuTileGroup(val groupTitle: List<DrawableWord>, val groupTiles: 
     }
 }
 
-class DrawableMenuTile(private val pageName: String, private val icon: String) : Drawable() {
+class DrawableMenuTile(private val pageName: String, private val icon: String, internal val onClick: (mouseButton: Int) -> Unit) : Drawable() {
     private val iconScale = 1.0
 
     override fun draw(mouseX: Int, mouseY: Int, delta: Float, visibleArea: Rectangle) {

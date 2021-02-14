@@ -59,5 +59,7 @@ open class DrawableParagraph : Drawable() {
         return area.height
     }
 
+    open fun mouseClicked(mouseX: Int, mouseY: Int, mouseButton: Int): Unit {}
+
     open fun drawChildren(mouseX: Int, mouseY: Int, delta: Float, visibleArea: Rectangle) {}
 }

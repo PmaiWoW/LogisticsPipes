@@ -56,6 +56,12 @@ class SavedPage constructor(val page: String = MAIN_MENU_FILE, var color: Int = 
         loadedPage.drawablePage.draw(mouseX, mouseY, delta, visibleArea)
     }
 
+    fun mouseClicked(mouseX: Int, mouseY: Int, mouseButton: Int, visibleArea: Rectangle) {
+        loadedPage.drawablePage.getVisibleParagraphs(visibleArea)
+            .firstOrNull { it.absBody.contains(mouseX, mouseY) }
+            ?.mouseClicked(mouseX, mouseY, mouseButton)
+    }
+
     fun setDrawablesPosition(area: Rectangle) {
         loadedPage.drawablePage.setWidth(area.width)
         println("Initialized page: ${loadedPage.drawablePage.width}")
@@ -69,9 +75,10 @@ class SavedPage constructor(val page: String = MAIN_MENU_FILE, var color: Int = 
      */
     fun fromBytes(input: LPDataInput): SavedPage {
         return SavedPage(
-                input.readUTF() ?: error("Oh fuck you!"),
-                input.readInt(),
-                input.readFloat())
+            input.readUTF() ?: "",
+            input.readInt(),
+            input.readFloat()
+        )
     }
 
     /**
@@ -86,9 +93,10 @@ class SavedPage constructor(val page: String = MAIN_MENU_FILE, var color: Int = 
 
     fun fromTag(nbt: NBTTagCompound): SavedPage {
         return SavedPage(
-                nbt.getString("page"),
-                nbt.getInteger("color"),
-                nbt.getFloat("progress"))
+            nbt.getString("page"),
+            nbt.getInteger("color"),
+            nbt.getFloat("progress")
+        )
     }
 
     fun toTag(): NBTTagCompound {
