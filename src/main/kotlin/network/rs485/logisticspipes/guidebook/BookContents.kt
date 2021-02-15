@@ -46,6 +46,7 @@ import logisticspipes.utils.MinecraftColor
 import net.minecraft.client.Minecraft
 import net.minecraft.util.ResourceLocation
 import network.rs485.logisticspipes.gui.guidebook.DrawablePage
+import network.rs485.logisticspipes.gui.guidebook.DrawablePageFactory
 import network.rs485.markdown.*
 import java.io.File
 import java.io.FileNotFoundException
@@ -104,7 +105,7 @@ object BookContents {
                                     "Curabitur fringilla nisl ut quam lacinia, vel laoreet leo placerat. Aliquam erat volutpat. Nulla faucibus cursus bibendum.\n" +
                                     "Etiam porttitor sed nulla vitae vehicula. Mauris nec dolor ipsum. In eget leo malesuada, faucibus turpis a, convallis neque."))
             )
-            override val drawablePage: DrawablePage = DrawablePage(paragraphs, metadataProvider = { metadata })
+            override val drawablePage: DrawablePage = DrawablePage { metadata }
         }
     }
 }
@@ -184,7 +185,8 @@ class LoadedPage(unformattedText: String, fileLocation: String) : PageInfoProvid
     }
 
     override val drawablePage: DrawablePage by lazy {
-        DrawablePage(paragraphs, metadataProvider = ::metadata::get)
+        val drawablePageFactory = DrawablePageFactory()
+        drawablePageFactory.createDrawablePage(metadata, paragraphs)
     }
 }
 
