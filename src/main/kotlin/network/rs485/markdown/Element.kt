@@ -37,6 +37,7 @@
 
 package network.rs485.markdown
 
+import logisticspipes.utils.MinecraftColor
 import java.util.*
 
 data class InlineDrawableState(var format: EnumSet<TextFormat>, var color: Int)
@@ -83,3 +84,8 @@ fun EnumSet<TextFormat>.strikethrough() = this.contains(TextFormat.Strikethrough
 fun EnumSet<TextFormat>.underline() = this.contains(TextFormat.Underline)
 
 fun EnumSet<TextFormat>.shadow() = this.contains(TextFormat.Shadow)
+
+val defaultDrawableState = InlineDrawableState(
+    format = EnumSet.noneOf(TextFormat::class.java),
+    color = MinecraftColor.WHITE.colorCode,
+)
