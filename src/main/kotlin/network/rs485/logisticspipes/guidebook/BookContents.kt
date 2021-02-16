@@ -86,21 +86,21 @@ object BookContents {
             override val paragraphs: List<Paragraph> = listOf(
                     HeaderParagraph(
                             listOf(TextFormatting(EnumSet.of(TextFormat.Italic, TextFormat.Shadow)), ColorFormatting(randomColor())) +
-                                    MarkdownParser.splitToInlineElements("Nulla faucibus cursus bibendum."), 4),
+                                    MarkdownParser.splitSpacesAndWords("Nulla faucibus cursus bibendum."), 4),
                     RegularParagraph(
                             listOf(TextFormatting(EnumSet.of(TextFormat.Bold, TextFormat.Shadow)), ColorFormatting(randomColor())) +
-                                    MarkdownParser.splitToInlineElements("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris vel sapien nisl.")),
+                                    MarkdownParser.splitSpacesAndWords("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris vel sapien nisl.")),
                     RegularParagraph(listOf(TextFormatting(EnumSet.of(TextFormat.Bold, TextFormat.Italic)), ColorFormatting(randomColor())) +
-                            MarkdownParser.splitToInlineElements("Phasellus ut ipsum quis metus rutrum tempus eget in lacus. Nam at sollicitudin massa.\n" +
+                            MarkdownParser.splitWhitespaceCharactersAndWords("Phasellus ut ipsum quis metus rutrum tempus eget in lacus. Nam at sollicitudin massa.\n" +
                                     "Curabitur fringilla nisl ut quam lacinia, vel laoreet leo placerat. Aliquam erat volutpat. Nulla faucibus cursus bibendum.\n" +
                                     "Etiam porttitor sed nulla vitae vehicula. Mauris nec dolor ipsum. In eget leo malesuada, faucibus turpis a, convallis neque.")),
                     HeaderParagraph(
                             listOf(TextFormatting(EnumSet.of(TextFormat.Strikethrough)), ColorFormatting(randomColor())) +
-                                    MarkdownParser.splitToInlineElements("Nulla faucibus cursus bibendum."), 4),
+                                    MarkdownParser.splitSpacesAndWords("Nulla faucibus cursus bibendum."), 4),
                     RegularParagraph(listOf(TextFormatting(EnumSet.of(TextFormat.Underline, TextFormat.Shadow)), ColorFormatting(randomColor())) +
-                            MarkdownParser.splitToInlineElements("Cras sit amet nisi velit. Etiam vitae elit quis ipsum rhoncus facilisis et ac ante.")),
+                            MarkdownParser.splitSpacesAndWords("Cras sit amet nisi velit. Etiam vitae elit quis ipsum rhoncus facilisis et ac ante.")),
                     RegularParagraph(listOf(TextFormatting(EnumSet.of(TextFormat.Underline, TextFormat.Italic)), ColorFormatting(randomColor())) +
-                            MarkdownParser.splitToInlineElements("Phasellus ut ipsum quis metus rutrum tempus eget in lacus. Nam at sollicitudin massa.\n" +
+                            MarkdownParser.splitWhitespaceCharactersAndWords("Phasellus ut ipsum quis metus rutrum tempus eget in lacus. Nam at sollicitudin massa.\n" +
                                     "Curabitur fringilla nisl ut quam lacinia, vel laoreet leo placerat. Aliquam erat volutpat. Nulla faucibus cursus bibendum.\n" +
                                     "Etiam porttitor sed nulla vitae vehicula. Mauris nec dolor ipsum. In eget leo malesuada, faucibus turpis a, convallis neque."))
             )

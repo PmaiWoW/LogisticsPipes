@@ -42,6 +42,20 @@ import java.util.*
 
 data class InlineDrawableState(var format: EnumSet<TextFormat>, var color: Int)
 
+sealed class Link
+
+data class WebLink(val url: String) : Link() {
+    init {
+        assert(url.isNotEmpty())
+    }
+}
+
+data class PageLink(val page: String) : Link() {
+    init {
+        assert(page.isNotEmpty())
+    }
+}
+
 sealed class InlineElement {
     open fun changeDrawableState(state: InlineDrawableState) {}
 }
@@ -58,11 +72,49 @@ data class ColorFormatting(val color: Int) : InlineElement() {
     }
 }
 
-data class Word(val str: String) : InlineElement()
+object Space : InlineElement() {
+    override fun toString(): String {
+        return "Markdown Space Element"
+    }
+}
 
-object Space : InlineElement()
+object Break : InlineElement() {
+    override fun toString(): String {
+        return "Markdown Break Element"
+    }
+}
 
-object Break : InlineElement()
+open class Word(val str: String) : InlineElement() {
+    init {
+        assert(str.isNotEmpty())
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return other is Word && other.str == this.str
+    }
+
+    override fun hashCode(): Int {
+        return str.hashCode()
+    }
+
+    override fun toString(): String {
+        return "Word($str)"
+    }
+}
+
+class LinkWord(str: String, val link: Link) : Word(str) {
+    override fun equals(other: Any?): Boolean {
+        return other is LinkWord && other.str == this.str && other.link == this.link
+    }
+
+    override fun hashCode(): Int {
+        return str.hashCode() + link.hashCode()
+    }
+
+    override fun toString(): String {
+        return "LinkWord($str, $link)"
+    }
+}
 
 /**
  * Used to track the tags a token has so the renderer knows how to draw said token.
