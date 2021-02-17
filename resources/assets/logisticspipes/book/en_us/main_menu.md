@@ -15,7 +15,7 @@ menu:
     Item Sinks:
       - items/itemsinks/oredict_itemsink.md
 --->
-![Main Menu](menu://main_menu)
+[Main Menu](menu://main_menu)
 
 # This is a header
 
