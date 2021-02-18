@@ -64,7 +64,7 @@ object BookContents {
     private val cachedLoadedPages = hashMapOf<String, PageInfoProvider>()
 
     init {
-        //if (LogisticsPipes.isDEBUG()) addDebugPages()
+        if (LogisticsPipes.isDEBUG()) addDebugPages()
     }
 
     fun get(markdownFile: String): PageInfoProvider {
@@ -76,33 +76,58 @@ object BookContents {
 
     fun clear() {
         cachedLoadedPages.clear()
-        //if (LogisticsPipes.isDEBUG()) addDebugPages()
+        if (LogisticsPipes.isDEBUG()) addDebugPages()
     }
 
     private fun addDebugPages() {
         fun randomColor(): Int = MinecraftColor.values()[Random.nextInt(MinecraftColor.values().size)].colorCode
         cachedLoadedPages[DEBUG_FILE] = object : PageInfoProvider {
-            override val metadata: YamlPageMetadata = YamlPageMetadata("Debug Page")
+            override val metadata: YamlPageMetadata = YamlPageMetadata(
+                title = "Debug Page",
+                icon = "logisticspipes:itemcard",
+                menu = mapOf(
+                    "listed" to mapOf(
+                        "Guides:" to listOf("/guides/quickstart_guide.md", "/guides/start_guide.md", "/guides/intermediate_guide.md", "/guides/advanced_guide.md", "/guides/in_depth.md")
+                    )
+                )
+            )
             override val paragraphs: List<Paragraph> = listOf(
-                    HeaderParagraph(
-                            listOf(TextFormatting(EnumSet.of(TextFormat.Italic, TextFormat.Shadow)), ColorFormatting(randomColor())) +
-                                    MarkdownParser.splitSpacesAndWords("Nulla faucibus cursus bibendum."), 4),
-                    RegularParagraph(
-                            listOf(TextFormatting(EnumSet.of(TextFormat.Bold, TextFormat.Shadow)), ColorFormatting(randomColor())) +
-                                    MarkdownParser.splitSpacesAndWords("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris vel sapien nisl.")),
-                    RegularParagraph(listOf(TextFormatting(EnumSet.of(TextFormat.Bold, TextFormat.Italic)), ColorFormatting(randomColor())) +
-                            MarkdownParser.splitWhitespaceCharactersAndWords("Phasellus ut ipsum quis metus rutrum tempus eget in lacus. Nam at sollicitudin massa.\n" +
-                                    "Curabitur fringilla nisl ut quam lacinia, vel laoreet leo placerat. Aliquam erat volutpat. Nulla faucibus cursus bibendum.\n" +
-                                    "Etiam porttitor sed nulla vitae vehicula. Mauris nec dolor ipsum. In eget leo malesuada, faucibus turpis a, convallis neque.")),
-                    HeaderParagraph(
-                            listOf(TextFormatting(EnumSet.of(TextFormat.Strikethrough)), ColorFormatting(randomColor())) +
-                                    MarkdownParser.splitSpacesAndWords("Nulla faucibus cursus bibendum."), 4),
-                    RegularParagraph(listOf(TextFormatting(EnumSet.of(TextFormat.Underline, TextFormat.Shadow)), ColorFormatting(randomColor())) +
-                            MarkdownParser.splitSpacesAndWords("Cras sit amet nisi velit. Etiam vitae elit quis ipsum rhoncus facilisis et ac ante.")),
-                    RegularParagraph(listOf(TextFormatting(EnumSet.of(TextFormat.Underline, TextFormat.Italic)), ColorFormatting(randomColor())) +
-                            MarkdownParser.splitWhitespaceCharactersAndWords("Phasellus ut ipsum quis metus rutrum tempus eget in lacus. Nam at sollicitudin massa.\n" +
-                                    "Curabitur fringilla nisl ut quam lacinia, vel laoreet leo placerat. Aliquam erat volutpat. Nulla faucibus cursus bibendum.\n" +
-                                    "Etiam porttitor sed nulla vitae vehicula. Mauris nec dolor ipsum. In eget leo malesuada, faucibus turpis a, convallis neque."))
+                MenuListParagraph(
+                    description = "A listed menu.",
+                    link = "listed"
+                ),
+                HeaderParagraph(
+                    listOf(TextFormatting(EnumSet.of(TextFormat.Italic, TextFormat.Shadow)), ColorFormatting(randomColor())) +
+                            MarkdownParser.splitSpacesAndWords("Nulla faucibus cursus bibendum."), 4
+                ),
+                RegularParagraph(
+                    listOf(TextFormatting(EnumSet.of(TextFormat.Bold, TextFormat.Shadow)), ColorFormatting(randomColor())) +
+                            MarkdownParser.splitSpacesAndWords("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris vel sapien nisl.")
+                ),
+                RegularParagraph(
+                    listOf(TextFormatting(EnumSet.of(TextFormat.Bold, TextFormat.Italic)), ColorFormatting(randomColor())) +
+                            MarkdownParser.splitWhitespaceCharactersAndWords(
+                                "Phasellus ut ipsum quis metus rutrum tempus eget in lacus. Nam at sollicitudin massa.\n" +
+                                        "Curabitur fringilla nisl ut quam lacinia, vel laoreet leo placerat. Aliquam erat volutpat. Nulla faucibus cursus bibendum.\n" +
+                                        "Etiam porttitor sed nulla vitae vehicula. Mauris nec dolor ipsum. In eget leo malesuada, faucibus turpis a, convallis neque."
+                            )
+                ),
+                HeaderParagraph(
+                    listOf(TextFormatting(EnumSet.of(TextFormat.Strikethrough)), ColorFormatting(randomColor())) +
+                            MarkdownParser.splitSpacesAndWords("Nulla faucibus cursus bibendum."), 4
+                ),
+                RegularParagraph(
+                    listOf(TextFormatting(EnumSet.of(TextFormat.Underline, TextFormat.Shadow)), ColorFormatting(randomColor())) +
+                            MarkdownParser.splitSpacesAndWords("Cras sit amet nisi velit. Etiam vitae elit quis ipsum rhoncus facilisis et ac ante.")
+                ),
+                RegularParagraph(
+                    listOf(TextFormatting(EnumSet.of(TextFormat.Underline, TextFormat.Italic)), ColorFormatting(randomColor())) +
+                            MarkdownParser.splitWhitespaceCharactersAndWords(
+                                "Phasellus ut ipsum quis metus rutrum tempus eget in lacus. Nam at sollicitudin massa.\n" +
+                                        "Curabitur fringilla nisl ut quam lacinia, vel laoreet leo placerat. Aliquam erat volutpat. Nulla faucibus cursus bibendum.\n" +
+                                        "Etiam porttitor sed nulla vitae vehicula. Mauris nec dolor ipsum. In eget leo malesuada, faucibus turpis a, convallis neque."
+                            )
+                )
             )
         }
     }
