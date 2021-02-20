@@ -239,7 +239,7 @@ class GuiGuideBook(val hand: EnumHand) : GuiScreen() {
     }
 
     override fun onGuiClosed() {
-        ItemGuideBook.setCurrentPage(Minecraft.getMinecraft().player.getHeldItem(hand), savagePage, tabs, hand)
+        ItemGuideBook.setCurrentPage(Minecraft.getMinecraft().player.getHeldItem(hand), savagePage, ArrayList(tabs), hand)
         BookContents.clear()
         super.onGuiClosed()
     }

@@ -37,8 +37,7 @@
 
 package network.rs485.logisticspipes.network.packets;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Objects;
 
 import net.minecraft.entity.player.EntityPlayer;
@@ -71,7 +70,7 @@ public class SetCurrentPagePacket extends ModernPacket {
 
 	@Getter
 	@Setter
-	private List<SavedPage> savedPages = Collections.emptyList();
+	private ArrayList<SavedPage> savedPages = new ArrayList<>();
 
 	public SetCurrentPagePacket(int id) {
 		super(id);

@@ -1,6 +1,6 @@
 package logisticspipes.items;
 
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 
@@ -27,7 +27,7 @@ public class ItemGuideBook extends LogisticsItem {
 		this.maxStackSize = 1;
 	}
 
-	public static void setCurrentPage(ItemStack stack, SavedPage page, List<SavedPage> tabs, EnumHand hand) {
+	public static void setCurrentPage(ItemStack stack, SavedPage page, ArrayList<SavedPage> tabs, EnumHand hand) {
 		if (!stack.isEmpty() && stack.getItem() == LPItems.itemGuideBook) {
 			final NBTTagCompound tag = stack.hasTagCompound() ? Objects.requireNonNull(stack.getTagCompound()) : new NBTTagCompound();
 			tag.setTag("page", page.toTag());

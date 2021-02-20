@@ -78,12 +78,8 @@ class SavedPage(val page: String) {
      * @param output data to send
      */
     fun toBytes(output: LPDataOutput) {
-        output.writeUTF(page)
-        output.writeInt(color)
-        output.writeFloat(progress)
+        output.writeNBTTagCompound(toTag())
     }
-
-
 
     fun toTag(): NBTTagCompound {
         val nbt = NBTTagCompound()
@@ -94,12 +90,12 @@ class SavedPage(val page: String) {
     }
 
     companion object{
-        fun fromTag(nbt: NBTTagCompound): SavedPage {
-            return SavedPage(
+        fun fromTag(nbt: NBTTagCompound?): SavedPage {
+            return if(nbt != null) SavedPage(
                 page = nbt.getString("page"),
                 color = nbt.getInteger("color"),
                 progress = nbt.getFloat("progress")
-            )
+            ) else SavedPage(BookContents.DEBUG_FILE)
         }
 
         /**
@@ -109,11 +105,7 @@ class SavedPage(val page: String) {
          */
         @JvmStatic
         fun fromBytes(input: LPDataInput): SavedPage {
-            return SavedPage(
-                page = input.readUTF() ?: "",
-                color = input.readInt(),
-                progress = input.readFloat()
-            )
+            return fromTag(input.readNBTTagCompound())
         }
     }
 
