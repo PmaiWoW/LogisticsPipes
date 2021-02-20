@@ -74,19 +74,6 @@ class SavedPage(val page: String) {
     }
 
     /**
-     * Takes in an LPDataInput buffer and turns the buffered bytes object into a SavedPage object.
-     * @param input the received data
-     * @return SavedPage object created from the buffered data
-     */
-    fun fromBytes(input: LPDataInput): SavedPage {
-        return SavedPage(
-            page = input.readUTF() ?: "",
-            color = input.readInt(),
-            progress = input.readFloat()
-        )
-    }
-
-    /**
      * Takes in an LPDataOutput buffer and turns a SavedPage object into bytes and puts them inside the buffer.
      * @param output data to send
      */
@@ -96,13 +83,7 @@ class SavedPage(val page: String) {
         output.writeFloat(progress)
     }
 
-    fun fromTag(nbt: NBTTagCompound): SavedPage {
-        return SavedPage(
-            page = nbt.getString("page"),
-            color = nbt.getInteger("color"),
-            progress = nbt.getFloat("progress")
-        )
-    }
+
 
     fun toTag(): NBTTagCompound {
         val nbt = NBTTagCompound()
@@ -110,6 +91,30 @@ class SavedPage(val page: String) {
         nbt.setInteger("color", color)
         nbt.setFloat("progress", progress)
         return nbt
+    }
+
+    companion object{
+        fun fromTag(nbt: NBTTagCompound): SavedPage {
+            return SavedPage(
+                page = nbt.getString("page"),
+                color = nbt.getInteger("color"),
+                progress = nbt.getFloat("progress")
+            )
+        }
+
+        /**
+         * Takes in an LPDataInput buffer and turns the buffered bytes object into a SavedPage object.
+         * @param input the received data
+         * @return SavedPage object created from the buffered data
+         */
+        @JvmStatic
+        fun fromBytes(input: LPDataInput): SavedPage {
+            return SavedPage(
+                page = input.readUTF() ?: "",
+                color = input.readInt(),
+                progress = input.readFloat()
+            )
+        }
     }
 
     fun isEqual(b: SavedPage): Boolean = this.page == b.page

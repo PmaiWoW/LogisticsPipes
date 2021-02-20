@@ -37,7 +37,8 @@
 
 package network.rs485.logisticspipes.network.packets;
 
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 import net.minecraft.entity.player.EntityPlayer;
@@ -48,7 +49,6 @@ import net.minecraft.util.EnumHand;
 
 import lombok.Getter;
 import lombok.Setter;
-import static network.rs485.logisticspipes.guidebook.BookContents.MAIN_MENU_FILE;
 
 import logisticspipes.LPItems;
 import logisticspipes.LogisticsPipes;
@@ -71,7 +71,7 @@ public class SetCurrentPagePacket extends ModernPacket {
 
 	@Getter
 	@Setter
-	private ArrayList<SavedPage> savedPages = new ArrayList<>();
+	private List<SavedPage> savedPages = Collections.emptyList();
 
 	public SetCurrentPagePacket(int id) {
 		super(id);
@@ -94,10 +94,10 @@ public class SetCurrentPagePacket extends ModernPacket {
 		super.readData(input);
 		try {
 			hand = input.readEnum(EnumHand.class);
-			page = new SavedPage(MAIN_MENU_FILE).fromBytes(input);
+			page = SavedPage.fromBytes(input);
 			int size = input.readInt();
 			for (int i = 0; i < size; i++) {
-				savedPages.add(new SavedPage(MAIN_MENU_FILE).fromBytes(input));
+				savedPages.add(SavedPage.fromBytes(input));
 			}
 		} catch (IllegalStateException e) {
 			LogisticsPipes.log.warn("Couldn't read SetCurrentPagePacket data", e);
