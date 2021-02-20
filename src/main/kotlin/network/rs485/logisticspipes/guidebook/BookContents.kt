@@ -96,6 +96,10 @@ object BookContents {
                     description = "A listed menu.",
                     link = "listed"
                 ),
+                ImageParagraph(
+                    "This image failed loading",
+                    "book/en_us/guides/test_image.png"
+                ),
                 HeaderParagraph(
                     listOf(TextFormatting(EnumSet.of(TextFormat.Italic, TextFormat.Shadow)), ColorFormatting(randomColor())) +
                             MarkdownParser.splitSpacesAndWords("Nulla faucibus cursus bibendum."), 4

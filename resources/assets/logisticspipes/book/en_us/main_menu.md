@@ -15,6 +15,8 @@ menu:
     Item Sinks:
       - items/itemsinks/oredict_itemsink.md
 --->
+![this was supposed to be an LP image](image://book/en_us/guides/test_image.png)
+
 [Main Menu](menu://main_menu)
 
 # This is a header
