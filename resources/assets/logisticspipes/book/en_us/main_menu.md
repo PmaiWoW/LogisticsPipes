@@ -15,9 +15,10 @@ menu:
     Item Sinks:
       - items/itemsinks/oredict_itemsink.md
 --->
-![this was supposed to be an LP image](image://book/en_us/guides/test_image.png)
 
+[List Menu](list://main_menu)
 [Main Menu](menu://main_menu)
+[List Menu Too](list://main_menu)
 
 # This is a header
 
@@ -26,3 +27,5 @@ menu:
 ---
 
 This _is_ example **Markdown** text right after the metadata. This ***should*** work.
+
+![this was supposed to be an LP image](image://book/en_us/guides/test_image.png)

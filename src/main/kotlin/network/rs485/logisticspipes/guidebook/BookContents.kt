@@ -96,6 +96,10 @@ object BookContents {
                     description = "A listed menu.",
                     link = "listed"
                 ),
+                MenuParagraph(
+                    description = "A menu.",
+                    link = "listed"
+                ),
                 ImageParagraph(
                     "This image failed loading",
                     "book/en_us/guides/test_image.png"
