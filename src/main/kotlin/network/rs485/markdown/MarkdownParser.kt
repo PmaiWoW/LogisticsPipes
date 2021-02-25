@@ -64,6 +64,7 @@ object MarkdownParser {
             get() = match.value.trimStart().startsWith('!')
 
         fun isMenuLink() = link?.startsWith("menu://", ignoreCase = true) ?: false
+        fun isMenuListLink() = link?.startsWith("list://", ignoreCase = true) ?: false
         fun isPageLink() = link?.startsWith("page://", ignoreCase = true) ?: false
         fun isWebLink() = link?.matches(webLinkRegex) ?: false
         fun isImageLink() = link?.startsWith("image://", ignoreCase = true) ?: false
@@ -343,6 +344,10 @@ object MarkdownParser {
                 lineLinkMatch?.isMenuLink() == true && !lineLinkMatch!!.imageLinkFlag -> {
                     completeParagraph()
                     paragraphs.add(MenuParagraph(lineLinkMatch!!.text!!, lineLinkMatch!!.linkWithoutProtocol!!))
+                }
+                lineLinkMatch?.isMenuListLink() == true && !lineLinkMatch!!.imageLinkFlag -> {
+                    completeParagraph()
+                    paragraphs.add(MenuListParagraph(lineLinkMatch!!.text!!, lineLinkMatch!!.linkWithoutProtocol!!))
                 }
                 lineLinkMatch?.isImageLink() == true && lineLinkMatch!!.imageLinkFlag -> {
                     completeParagraph()

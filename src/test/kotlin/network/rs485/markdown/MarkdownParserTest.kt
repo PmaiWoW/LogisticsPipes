@@ -551,6 +551,18 @@ internal class MarkdownParserTest {
     }
 
     @Test
+    fun `parse a simple list menu tag`() {
+        val text = "Main Menu"
+        val link = "main_menu"
+        val paragraphs = parseParagraphs("[$text](list://$link)")
+
+        val expectedParagraphs = listOf(
+            MenuListParagraph(text, link)
+        )
+        assertEquals(expectedParagraphs, paragraphs)
+    }
+
+    @Test
     fun `parse an incomplete menu tag`() {
         val str = "[Menu(menu://main_menu)"
         val paragraphs = parseParagraphs(str)
