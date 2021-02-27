@@ -37,8 +37,6 @@
 
 package network.rs485.logisticspipes.gui.guidebook
 
-import logisticspipes.LPConstants
-import net.minecraft.util.ResourceLocation
 import network.rs485.logisticspipes.gui.guidebook.Drawable.Companion.createParent
 import network.rs485.logisticspipes.guidebook.BookContents
 import network.rs485.logisticspipes.guidebook.PageInfoProvider
@@ -92,23 +90,24 @@ object DrawablePageFactory {
                     paragraphConstructor = { drawableMenuTitle ->
                         createDrawableMenuParagraph(page.metadata, paragraph, drawableMenuTitle)
                     },
-                    elements = MarkdownParser.splitSpacesAndWords(paragraph.description),
+                    elements = MarkdownParser.splitAndFormatWords(paragraph.description),
                     scale = getScaleFromLevel(3)
                 )
                 is MenuListParagraph -> createDrawableParagraph(
                     paragraphConstructor = { drawableMenuTitle ->
                         createDrawableMenuListParagraph(page.metadata, paragraph, drawableMenuTitle)
                     },
-                    elements = MarkdownParser.splitSpacesAndWords(paragraph.description),
+                    elements = MarkdownParser.splitAndFormatWords(paragraph.description),
                     scale = getScaleFromLevel(3)
                 )
                 is ImageParagraph -> createDrawableParagraph(
                     paragraphConstructor = { drawableAlternativeText ->
-                        DrawableImageParagraph(drawableAlternativeText, DrawableImage(ResourceLocation(LPConstants.LP_MOD_ID, paragraph.link))).also {
+                        val imageResource = page.resolveResource(paragraph.imagePath)
+                        DrawableImageParagraph(drawableAlternativeText, DrawableImage(imageResource)).also {
                             drawableImageParagraph ->  drawableImageParagraph.image.parent = drawableImageParagraph
                         }
                     },
-                    elements = MarkdownParser.splitSpacesAndWords(paragraph.alternative),
+                    elements = MarkdownParser.splitAndFormatWords(paragraph.alternative),
                     scale = 1.0
                 )
             }
@@ -121,7 +120,7 @@ object DrawablePageFactory {
     ) = (pageMetadata.menu[paragraph.link] ?: error("Requested menu ${paragraph.link}, not found.")).map { (groupTitle: String, groupEntries: List<String>) ->
         createDrawableParagraph(
             paragraphConstructor = { drawableGroupTitle -> createDrawableMenu(groupEntries, drawableGroupTitle) },
-            elements = MarkdownParser.splitSpacesAndWords(groupTitle),
+            elements = MarkdownParser.splitAndFormatWords(groupTitle),
             scale = getScaleFromLevel(6)
         )
     }.let { drawableMenuGroups ->
@@ -136,7 +135,7 @@ object DrawablePageFactory {
     ) = (pageMetadata.menu[paragraph.link] ?: error("Requested menu ${paragraph.link}, not found in ${pageMetadata.menu}.")).map { (groupTitle: String, groupEntries: List<String>) ->
         createDrawableParagraph(
             paragraphConstructor = { drawableGroupTitle -> createDrawableMenuListGroup(groupEntries, drawableGroupTitle) },
-            elements = MarkdownParser.splitSpacesAndWords(groupTitle),
+            elements = MarkdownParser.splitAndFormatWords(groupTitle),
             scale = getScaleFromLevel(6)
         )
     }.let { drawableMenuGroups ->

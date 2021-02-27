@@ -44,6 +44,8 @@ import kotlin.collections.ArrayList
 
 typealias WordCreator = (String) -> Word?
 
+typealias WordFormatter = (CharSequence, wordSplitter: TextToElements) -> List<InlineElement>
+
 typealias TextToElements = (CharSequence) -> List<InlineElement>
 
 object MarkdownParser {
@@ -68,6 +70,7 @@ object MarkdownParser {
         fun isPageLink() = link?.startsWith("page://", ignoreCase = true) ?: false
         fun isWebLink() = link?.matches(webLinkRegex) ?: false
         fun isImageLink() = link?.startsWith("image://", ignoreCase = true) ?: false
+        fun isItemLink() = link?.startsWith("item://", ignoreCase = true) ?: false
     }
 
     private val htmlBreakRegex = Regex("<br(\\s*/)?>")
@@ -80,7 +83,7 @@ object MarkdownParser {
         return chars
             .split('\n')
             .map { words ->
-                splitSpacesAndWords(words) + listOf(Break)
+                splitAndFormatWords(words) + listOf(Break)
             }
             .flatten()
             .dropLast(1)
@@ -183,7 +186,7 @@ object MarkdownParser {
 
     }
 
-    internal fun splitSpacesAndWords(inputChars: CharSequence, makeWord: WordCreator = ::parseTextElement): List<InlineElement> {
+    private fun splitAndFormatWords(inputChars: CharSequence, wordSplitter: TextToElements): List<InlineElement> {
         val textLine = inputChars.trimEnd()
         val replacingChars = ReplacedCharSequence(textLine)
         boldItalicRegexes.forEach { (level, regex) ->
@@ -218,20 +221,7 @@ object MarkdownParser {
         val mappedWords = arrayListOf<InlineElement>()
         fun addMappedWords(originalRange: IntRange) {
             if (originalRange.isEmpty()) return
-            mappedWords.addAll(
-                textLine.subSequence(originalRange)
-                    .split(' ')
-                    .flatMap { word -> listOfNotNull(makeWord(word)) }
-                    .plus(Space) // appended Space to be removed as the last right element in the following zipWithNext
-                    .zipWithNext { left, right ->
-                        // adds Spaces in between, makes sure Space always follows a Word
-                        when {
-                            left is Word && right is Word -> listOf(left, Space)
-                            else -> listOf(left)
-                        }
-                    }
-                    .flatten()
-            )
+            mappedWords.addAll(wordSplitter(textLine.subSequence(originalRange)))
         }
         var startIdx = 0
         replacingChars.forEachReplace { (range, inlineElem) ->
@@ -243,12 +233,31 @@ object MarkdownParser {
         return mappedWords
     }
 
+    internal fun splitAndFormatWords(inputChars: CharSequence): List<InlineElement> = splitAndFormatWords(inputChars, ::splitSpacesAndWords)
+
+    private fun splitSpacesAndWords(inputChars: CharSequence, makeWord: WordCreator): List<InlineElement> {
+        return inputChars
+            .split(' ')
+            .flatMap { word -> listOfNotNull(makeWord(word)) }
+            .plus(Space) // appended Space to be removed as the last right element in the following zipWithNext
+            .zipWithNext { left, right ->
+                // adds Spaces in between, makes sure Space always follows a Word
+                when {
+                    left is Word && right is Word -> listOf(left, Space)
+                    else -> listOf(left)
+                }
+            }
+            .flatten()
+    }
+
+    internal fun splitSpacesAndWords(inputChars: CharSequence): List<InlineElement> = splitSpacesAndWords(inputChars, ::parseTextElement)
+
     private fun parseTextElement(word: String) = if (word.isNotBlank()) Word(word) else null
 
     private fun parseLinks(
         inputChars: CharSequence,
-        splitSpacesAndWords: (CharSequence, WordCreator) -> List<InlineElement>,
-        splitWhitespaceCharactersAndWords: TextToElements,
+        splitAndFormatWordsPar: WordFormatter,
+        splitWhitespaceCharactersAndWordsPar: TextToElements,
     ): List<InlineElement> {
         var lastCharLookedAt = 0
         val postfixGetter = { if (lastCharLookedAt < inputChars.length) inputChars.subSequence(lastCharLookedAt, inputChars.length) else "" }
@@ -259,7 +268,7 @@ object MarkdownParser {
                 // checks link
                 val before = inputChars.subSequence(lastCharLookedAt, link.match.range.first)
                 listOf(
-                    splitWhitespaceCharactersAndWords(before).let { if (!isLastWhitespace() && it.isEmpty()) emptyList() else it + listOf(Space) },
+                    splitWhitespaceCharactersAndWordsPar(before).let { if (!isLastWhitespace() && it.isEmpty()) emptyList() else it + listOf(Space) },
                     when {
                         link.isPageLink() -> PageLink(link.linkWithoutProtocol!!)
                         link.isWebLink() -> WebLink(link.link!!)
@@ -267,14 +276,18 @@ object MarkdownParser {
                     }?.let { linkRef ->
                         listOf(
                             listOfNotNull(Word("!").takeIf { link.imageLinkFlag }),
-                            splitSpacesAndWords(link.text!!) { word -> if (word.isNotBlank()) LinkWord(word, linkRef) else null }
+                            splitAndFormatWordsPar(link.text!!) { wordsToSplit ->
+                                splitSpacesAndWords(wordsToSplit) { word ->
+                                    if (word.isNotBlank()) LinkWord(word, linkRef) else null
+                                }
+                            }
                         ).flatten()
-                    } ?: splitWhitespaceCharactersAndWords(link.match.value),
+                    } ?: splitWhitespaceCharactersAndWordsPar(link.match.value),
                 ).flatten().also { lastCharLookedAt = link.match.range.last + 1 }
             }
             .toList()
             .plus(if (isLastWhitespace()) listOf(Space) else emptyList())
-            .plus(splitWhitespaceCharactersAndWords(postfixGetter()))
+            .plus(splitWhitespaceCharactersAndWordsPar(postfixGetter()))
     }
 
     private fun countChars(char: Char, str: String, index: Int = 0, maximum: Int = str.length): Int {
@@ -294,8 +307,8 @@ object MarkdownParser {
             if (sb.isNotBlank()) {
                 val parsedInlineElements = parseLinks(
                     inputChars = sb,
-                    splitSpacesAndWords = ::splitSpacesAndWords,
-                    splitWhitespaceCharactersAndWords = ::splitWhitespaceCharactersAndWords
+                    splitAndFormatWordsPar = ::splitAndFormatWords,
+                    splitWhitespaceCharactersAndWordsPar = ::splitWhitespaceCharactersAndWords
                 )
                 paragraphs.add(RegularParagraph(parsedInlineElements))
             }

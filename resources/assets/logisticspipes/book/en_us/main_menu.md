@@ -28,4 +28,4 @@ menu:
 
 This _is_ example **Markdown** text right after the metadata. This ***should*** work.
 
-![this was supposed to be an LP image](image://book/en_us/guides/test_image.png)
+![this was supposed to be an LP image](image:///guides/test_image.png)
