@@ -353,7 +353,6 @@ object MarkdownParser {
                     completeParagraph()
                     paragraphs.add(ImageParagraph(lineLinkMatch!!.text!!, lineLinkMatch!!.linkWithoutProtocol!!))
                 }
-                // TODO: add ListParagraph
                 else -> dumpLineToBuffer()
             }
         }
