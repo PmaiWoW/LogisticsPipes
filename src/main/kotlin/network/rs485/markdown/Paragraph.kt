@@ -43,9 +43,12 @@ data class RegularParagraph(val elements: List<InlineElement>) : Paragraph()
 
 data class HeaderParagraph(val elements: List<InlineElement>, val headerLevel: Int) : Paragraph()
 
-data class MenuParagraph(val description: String, val link: String) : Paragraph()
+data class MenuParagraph(val description: String, val link: String, val type: MenuParagraphType) : Paragraph()
 
-data class MenuListParagraph(val description: String, val link: String) : Paragraph()
+enum class MenuParagraphType {
+    TILE,
+    LIST,
+}
 
 data class ImageParagraph(val alternative: String, val imagePath: String) : Paragraph()
 

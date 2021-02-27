@@ -66,13 +66,15 @@ object DebugPage : PageInfoProvider {
         )
     )
     override val paragraphs: List<Paragraph> = listOf(
-        MenuListParagraph(
+        MenuParagraph(
             description = "A listed menu.",
-            link = "listed"
+            link = "listed",
+            type = MenuParagraphType.LIST,
         ),
         MenuParagraph(
             description = "A menu.",
-            link = "listed"
+            link = "listed",
+            type = MenuParagraphType.TILE,
         ),
         ImageParagraph(
             alternative = "This image failed loading",

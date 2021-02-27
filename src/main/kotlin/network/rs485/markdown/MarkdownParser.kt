@@ -65,8 +65,11 @@ object MarkdownParser {
         val imageLinkFlag: Boolean
             get() = match.value.trimStart().startsWith('!')
 
-        fun isMenuLink() = link?.startsWith("menu://", ignoreCase = true) ?: false
-        fun isMenuListLink() = link?.startsWith("list://", ignoreCase = true) ?: false
+        fun getMenuType() = when {
+            link?.startsWith("tilemenu://", ignoreCase = true) ?: false -> MenuParagraphType.TILE
+            link?.startsWith("listmenu://", ignoreCase = true) ?: false -> MenuParagraphType.LIST
+            else -> null
+        }
         fun isPageLink() = link?.startsWith("page://", ignoreCase = true) ?: false
         fun isWebLink() = link?.matches(webLinkRegex) ?: false
         fun isImageLink() = link?.startsWith("image://", ignoreCase = true) ?: false
@@ -354,13 +357,9 @@ object MarkdownParser {
                     paragraphs.add(if (sb.isBlank()) HorizontalLineParagraph else HeaderParagraph(splitWhitespaceCharactersAndWords(sb.toString()), 2))
                     sb.clear()
                 }
-                lineLinkMatch?.isMenuLink() == true && !lineLinkMatch!!.imageLinkFlag -> {
+                lineLinkMatch?.getMenuType() != null && !lineLinkMatch!!.imageLinkFlag -> {
                     completeParagraph()
-                    paragraphs.add(MenuParagraph(lineLinkMatch!!.text!!, lineLinkMatch!!.linkWithoutProtocol!!))
-                }
-                lineLinkMatch?.isMenuListLink() == true && !lineLinkMatch!!.imageLinkFlag -> {
-                    completeParagraph()
-                    paragraphs.add(MenuListParagraph(lineLinkMatch!!.text!!, lineLinkMatch!!.linkWithoutProtocol!!))
+                    paragraphs.add(MenuParagraph(lineLinkMatch!!.text!!, lineLinkMatch!!.linkWithoutProtocol!!, lineLinkMatch!!.getMenuType()!!))
                 }
                 lineLinkMatch?.isImageLink() == true && lineLinkMatch!!.imageLinkFlag -> {
                     completeParagraph()

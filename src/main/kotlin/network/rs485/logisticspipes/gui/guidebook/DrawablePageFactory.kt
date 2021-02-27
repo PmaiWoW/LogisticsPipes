@@ -45,6 +45,7 @@ import network.rs485.markdown.*
 import java.lang.Double.min
 
 private typealias DrawableWordMap<T> = (List<DrawableWord>) -> T
+private typealias DrawableMenuEntryFactory<T> = (linkedPage: String, pageName: String, icon: String) -> T
 
 object DrawablePageFactory {
     /**
@@ -88,14 +89,11 @@ object DrawablePageFactory {
                 is HorizontalLineParagraph -> DrawableHorizontalLine(2)
                 is MenuParagraph -> createDrawableParagraph(
                     paragraphConstructor = { drawableMenuTitle ->
-                        createDrawableMenuParagraph(page.metadata, paragraph, drawableMenuTitle)
-                    },
-                    elements = MarkdownParser.splitAndFormatWords(paragraph.description),
-                    scale = getScaleFromLevel(3)
-                )
-                is MenuListParagraph -> createDrawableParagraph(
-                    paragraphConstructor = { drawableMenuTitle ->
-                        createDrawableMenuListParagraph(page.metadata, paragraph, drawableMenuTitle)
+                        val factory = when (paragraph.type) {
+                            MenuParagraphType.LIST -> ::DrawableMenuListEntry
+                            MenuParagraphType.TILE -> ::DrawableMenuTile
+                        }
+                        createDrawableMenuParagraph(page.metadata, paragraph, drawableMenuTitle, factory)
                     },
                     elements = MarkdownParser.splitAndFormatWords(paragraph.description),
                     scale = getScaleFromLevel(3)
@@ -113,13 +111,14 @@ object DrawablePageFactory {
             }
         }
 
-    private fun createDrawableMenuParagraph(
+    private fun <T: Drawable> createDrawableMenuParagraph(
         pageMetadata: YamlPageMetadata,
         paragraph: MenuParagraph,
         drawableMenuTitle: List<DrawableWord>,
+        drawableMenuEntryConstructor: DrawableMenuEntryFactory<T>,
     ) = (pageMetadata.menu[paragraph.link] ?: error("Requested menu ${paragraph.link}, not found.")).map { (groupTitle: String, groupEntries: List<String>) ->
         createDrawableParagraph(
-            paragraphConstructor = { drawableGroupTitle -> createDrawableMenu(groupEntries, drawableGroupTitle) },
+            paragraphConstructor = { drawableGroupTitle -> createDrawableMenu<T>(groupEntries, drawableGroupTitle, drawableMenuEntryConstructor) },
             elements = MarkdownParser.splitAndFormatWords(groupTitle),
             scale = getScaleFromLevel(6)
         )
@@ -127,41 +126,15 @@ object DrawablePageFactory {
         drawableMenuGroups.createParent { DrawableMenuParagraph(drawableMenuTitle, drawableMenuGroups) }
     }
 
-    // TODO stop shamelessly duplicating code
-    private fun createDrawableMenuListParagraph(
-        pageMetadata: YamlPageMetadata,
-        paragraph: MenuListParagraph,
-        drawableMenuTitle: List<DrawableWord>,
-    ) = (pageMetadata.menu[paragraph.link] ?: error("Requested menu ${paragraph.link}, not found in ${pageMetadata.menu}.")).map { (groupTitle: String, groupEntries: List<String>) ->
-        createDrawableParagraph(
-            paragraphConstructor = { drawableGroupTitle -> createDrawableMenuListGroup(groupEntries, drawableGroupTitle) },
-            elements = MarkdownParser.splitAndFormatWords(groupTitle),
-            scale = getScaleFromLevel(6)
-        )
-    }.let { drawableMenuGroups ->
-        drawableMenuGroups.createParent { DrawableMenuListParagraph(drawableMenuTitle, drawableMenuGroups) }
-    }
-
-    private fun createDrawableMenu(
+    private fun <T: Drawable> createDrawableMenu(
         menuGroupEntries: List<String>,
         drawableGroupTitle: List<DrawableWord>,
+        drawableMenuEntryConstructor: DrawableMenuEntryFactory<T>,
     ) = menuGroupEntries.map { path ->
             BookContents.get(path).metadata.let { metadata ->
-                DrawableMenuTile(path, metadata.title, metadata.icon)
+                drawableMenuEntryConstructor(path, metadata.title, metadata.icon)
             }
         }.let { drawableMenuTiles ->
-            drawableMenuTiles.createParent { DrawableMenuTileGroup(drawableGroupTitle, drawableMenuTiles) }
-        }
-
-    // TODO stop shamelessly duplicating code
-    private fun createDrawableMenuListGroup(
-        menuGroupEntries: List<String>,
-        drawableGroupTitle: List<DrawableWord>,
-    ) = menuGroupEntries.map { path ->
-            BookContents.get(path).metadata.let { metadata ->
-                DrawableMenuListEntry(path, metadata.title, metadata.icon)
-            }
-        }.let { drawableMenuTiles ->
-            drawableMenuTiles.createParent { DrawableMenuListGroup(drawableGroupTitle, drawableMenuTiles) }
+            drawableMenuTiles.createParent { DrawableMenuGroup(drawableGroupTitle, drawableMenuTiles) }
         }
 }
