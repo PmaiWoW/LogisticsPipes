@@ -4,10 +4,9 @@ icon: logisticspipes:module_blank
 menu:
   modules:
     Simple Modules:
-      - ./passive_supplier.md
+      - passive_supplier.md
     Complex Modules:
-      - ./active_supplier.md
+      - /items/modules/active_supplier.md
+      - ../modules/active_nonsense.md
 --->
-#[modules](type=list)
-
-
+[modules](menu://modules?type=list)

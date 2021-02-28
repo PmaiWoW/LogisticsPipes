@@ -539,10 +539,10 @@ internal class MarkdownParserTest {
     }
 
     @Test
-    fun `parse a simple menu tag`() {
+    fun `parse a simple tile menu tag`() {
         val text = "Main Menu"
         val link = "main_menu"
-        val paragraphs = parseParagraphs("[$text](tilemenu://$link)")
+        val paragraphs = parseParagraphs("[$text](menu://$link?type=tile)")
 
         val expectedParagraphs = listOf(
             MenuParagraph(text, link, MenuParagraphType.TILE)
@@ -554,7 +554,19 @@ internal class MarkdownParserTest {
     fun `parse a simple list menu tag`() {
         val text = "Main Menu"
         val link = "main_menu"
-        val paragraphs = parseParagraphs("[$text](listmenu://$link)")
+        val paragraphs = parseParagraphs("[$text](menu://$link?type=list)")
+
+        val expectedParagraphs = listOf(
+            MenuParagraph(text, link, MenuParagraphType.LIST)
+        )
+        assertEquals(expectedParagraphs, paragraphs)
+    }
+
+    @Test
+    fun `parse a list menu tag as default`() {
+        val text = "Main Menu"
+        val link = "main_menu"
+        val paragraphs = parseParagraphs("[$text](menu://$link)")
 
         val expectedParagraphs = listOf(
             MenuParagraph(text, link, MenuParagraphType.LIST)
@@ -588,7 +600,7 @@ internal class MarkdownParserTest {
     @Test
     fun `parse a couple of menu tags`() {
         val expectedParagraphs = (1..5).map { n -> MenuParagraph("Test $n", "test_menu_$n", MenuParagraphType.LIST) }.toList()
-        val str = expectedParagraphs.joinToString(separator = "\n") { "[${it.description}](menulist://${it.link})" }
+        val str = expectedParagraphs.joinToString(separator = "\n") { "[${it.description}](menu://${it.link})" }
 
         val paragraphs = parseParagraphs(str)
 

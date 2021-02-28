@@ -37,15 +37,17 @@
 
 package network.rs485.markdown
 
+import org.apache.http.NameValuePair
+import org.apache.http.client.utils.URLEncodedUtils
 import java.lang.Integer.min
+import java.net.URI
+import java.net.URISyntaxException
 import java.util.*
 import java.util.stream.IntStream
 import kotlin.collections.ArrayList
 
 typealias WordCreator = (String) -> Word?
-
 typealias WordFormatter = (CharSequence, wordSplitter: TextToElements) -> List<InlineElement>
-
 typealias TextToElements = (CharSequence) -> List<InlineElement>
 
 object MarkdownParser {
@@ -54,22 +56,39 @@ object MarkdownParser {
     private val boldItalicRegexes = (3 downTo 1)
         .flatMap { times -> listOf("_", "\\*").map { times to it.repeat(times) } }
         .map { (times, formatChain) -> times to Regex("(?!\\\\)$formatChain(.+?)(?!\\\\)$formatChain") }
+    private val pathRegex = Regex("^.*?://([^?]+)")
 
     private class LinkMatcher(val match: MatchResult) {
         val text: String?
             get() = match.groups[1]?.value
         val link: String?
             get() = match.groups[2]?.value
-        val linkWithoutProtocol: String?
-            get() = link?.run { substring(indexOf("://") + 3) }
+        val path: String?
+            get() = link?.let { pathRegex.find(it) }?.groups?.get(1)?.value
         val imageLinkFlag: Boolean
             get() = match.value.trimStart().startsWith('!')
-
-        fun getMenuType() = when {
-            link?.startsWith("tilemenu://", ignoreCase = true) ?: false -> MenuParagraphType.TILE
-            link?.startsWith("listmenu://", ignoreCase = true) ?: false -> MenuParagraphType.LIST
-            else -> null
+        val uri: URI? by lazy {
+            link?.let {
+                try {
+                    URI(it)
+                } catch (error: URISyntaxException) {
+                    null
+                }
+            }
         }
+        val queryComponents: List<NameValuePair>
+            get() = uri?.let { URLEncodedUtils.parse(it.query, Charsets.UTF_8) } ?: emptyList()
+
+        fun getMenuType() = if (uri?.scheme == "menu")
+            queryComponents.find { it.name == "type" }.let { type ->
+                when {
+                    type == null -> MenuParagraphType.LIST
+                    type.value == "list" -> MenuParagraphType.LIST
+                    type.value == "tile" -> MenuParagraphType.TILE
+                    else -> null
+                }
+            } else null
+
         fun isPageLink() = link?.startsWith("page://", ignoreCase = true) ?: false
         fun isWebLink() = link?.matches(webLinkRegex) ?: false
         fun isImageLink() = link?.startsWith("image://", ignoreCase = true) ?: false
@@ -226,6 +245,7 @@ object MarkdownParser {
             if (originalRange.isEmpty()) return
             mappedWords.addAll(wordSplitter(textLine.subSequence(originalRange)))
         }
+
         var startIdx = 0
         replacingChars.forEachReplace { (range, inlineElem) ->
             addMappedWords(startIdx until range.first)
@@ -273,7 +293,7 @@ object MarkdownParser {
                 listOf(
                     splitWhitespaceCharactersAndWordsPar(before).let { if (!isLastWhitespace() && it.isEmpty()) emptyList() else it + listOf(Space) },
                     when {
-                        link.isPageLink() -> PageLink(link.linkWithoutProtocol!!)
+                        link.isPageLink() -> PageLink(link.path!!)
                         link.isWebLink() -> WebLink(link.link!!)
                         else -> null
                     }?.let { linkRef ->
@@ -357,14 +377,16 @@ object MarkdownParser {
                     paragraphs.add(if (sb.isBlank()) HorizontalLineParagraph else HeaderParagraph(splitWhitespaceCharactersAndWords(sb.toString()), 2))
                     sb.clear()
                 }
-                lineLinkMatch?.getMenuType() != null && !lineLinkMatch!!.imageLinkFlag -> {
-                    completeParagraph()
-                    paragraphs.add(MenuParagraph(lineLinkMatch!!.text!!, lineLinkMatch!!.linkWithoutProtocol!!, lineLinkMatch!!.getMenuType()!!))
-                }
-                lineLinkMatch?.isImageLink() == true && lineLinkMatch!!.imageLinkFlag -> {
-                    completeParagraph()
-                    paragraphs.add(ImageParagraph(lineLinkMatch!!.text!!, lineLinkMatch!!.linkWithoutProtocol!!))
-                }
+                lineLinkMatch?.getMenuType() != null && !lineLinkMatch!!.imageLinkFlag ->
+                    lineLinkMatch?.also {
+                        completeParagraph()
+                        paragraphs.add(MenuParagraph(it.text!!, it.path!!, it.getMenuType()!!))
+                    }
+                lineLinkMatch?.isImageLink() == true && lineLinkMatch!!.imageLinkFlag ->
+                    lineLinkMatch?.also {
+                        completeParagraph()
+                        paragraphs.add(ImageParagraph(it.text!!, it.path!!))
+                    }
                 else -> dumpLineToBuffer()
             }
         }

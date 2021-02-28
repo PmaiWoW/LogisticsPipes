@@ -16,9 +16,9 @@ menu:
       - items/itemsinks/oredict_itemsink.md
 --->
 
-[List Menu](list://main_menu)
-[Main Menu](menu://main_menu)
-[List Menu Too](list://main_menu)
+[List Menu](menu://main_menu)
+[Main Menu](menu://main_menu?type=tile)
+[List Menu Too](menu://main_menu?type=list)
 
 # This is a header
 
