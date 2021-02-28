@@ -147,6 +147,7 @@ class GuiGuideBook(private val state: ItemGuideBook.GuideBookState) : GuiScreen(
 
     inner class ActionListener {
         fun onMenuButtonClick(newPage: String) = changePage(newPage)
+        fun onPageLinkClick(newPage: String) = changePage(newPage)
     }
 
     init {

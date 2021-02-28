@@ -42,7 +42,7 @@ import logisticspipes.utils.MinecraftColor
 import java.util.*
 import javax.xml.soap.Text
 
-data class InlineDrawableState(var format: Set<TextFormat>, var color: Int)
+data class InlineDrawableState(var format: Set<TextFormat>, var color: Int, var link: Link?)
 
 sealed class Link
 
@@ -60,6 +60,12 @@ data class PageLink(val page: String) : Link() {
 
 sealed class InlineElement {
     open fun changeDrawableState(state: InlineDrawableState) {}
+}
+
+data class LinkFormatting(val link: Link?) : InlineElement() {
+    override fun changeDrawableState(state: InlineDrawableState) {
+        state.link = this.link
+    }
 }
 
 data class TextFormatting(val format: EnumSet<TextFormat>) : InlineElement() {
@@ -86,35 +92,9 @@ object Break : InlineElement() {
     }
 }
 
-open class Word(val str: String) : InlineElement() {
+data class Word(val str: String) : InlineElement() {
     init {
         assert(str.isNotEmpty())
-    }
-
-    override fun equals(other: Any?): Boolean {
-        return other is Word && other.str == this.str
-    }
-
-    override fun hashCode(): Int {
-        return str.hashCode()
-    }
-
-    override fun toString(): String {
-        return "Word($str)"
-    }
-}
-
-class LinkWord(str: String, val link: Link) : Word(str) {
-    override fun equals(other: Any?): Boolean {
-        return other is LinkWord && other.str == this.str && other.link == this.link
-    }
-
-    override fun hashCode(): Int {
-        return str.hashCode() + link.hashCode()
-    }
-
-    override fun toString(): String {
-        return "LinkWord($str, $link)"
     }
 }
 
@@ -147,4 +127,5 @@ fun Set<TextFormat>.shadow() = this.contains(TextFormat.Shadow)
 val defaultDrawableState = InlineDrawableState(
     format = ImmutableSet.of(),
     color = MinecraftColor.WHITE.colorCode,
+    link = null,
 )

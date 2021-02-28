@@ -28,4 +28,10 @@ menu:
 
 This _is_ example **Markdown** text right after the metadata. This ***should*** work.
 
+---
+
+[See our **great** modules](page:///items/modules/modules.md)
+
+---
+
 ![this was supposed to be an LP image](image:///guides/test_image.png)
