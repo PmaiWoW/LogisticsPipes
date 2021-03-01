@@ -295,7 +295,6 @@ class GuiGuideBook(private val state: ItemGuideBook.GuideBookState) : GuiScreen(
         }
     }
 
-    // TODO change smoothing method to non-linear
     override fun updateScreen() {
         val progressDiff = currentProgress - state.currentPage.progress
         val speedModifier = 0.5f
@@ -1084,8 +1083,8 @@ class GuiGuideBook(private val state: ItemGuideBook.GuideBookState) : GuiScreen(
          * @param mouseY    cursor y position.
          */
         fun drawLinkIndicator(mouseX: Int, mouseY: Int) {
-            drawVerticalLine(mouseX + 3, mouseY - 5, mouseY - 2, GuideBookConstants.Z_TOOLTIP, 1, MinecraftColor.WHITE.colorCode)
-            drawHorizontalLine(mouseX + 2, mouseX + 5, mouseY - 4, GuideBookConstants.Z_TOOLTIP, 1, MinecraftColor.WHITE.colorCode)
+            drawVerticalLine(mouseX + 5, mouseY - 5, mouseY - 2, GuideBookConstants.Z_TOOLTIP, 1, MinecraftColor.WHITE.colorCode)
+            drawHorizontalLine(mouseX + 4, mouseX + 7, mouseY - 4, GuideBookConstants.Z_TOOLTIP, 1, MinecraftColor.WHITE.colorCode)
         }
 
         fun drawImage(imageBody: Rectangle, visibleArea: Rectangle, image: ResourceLocation) {

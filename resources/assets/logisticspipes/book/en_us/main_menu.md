@@ -30,7 +30,7 @@ This _is_ example **Markdown** text right after the metadata. This ***should*** 
 
 ---
 
-[See our **great** modules](page:///items/modules/modules.md)
+This should show the link as an inline set of words with different formatting but otherwise just like any other word. They should also all react to the mouse cursor in sync even if separated by a line break! See our [**great** modules](page:///items/modules/modules.md) for yourself!
 
 ---
 

@@ -63,9 +63,12 @@ open class DrawableWord(
         mouseInteractable?.mouseClicked(mouseX, mouseY, visibleArea, guideActionListener) ?: super.mouseClicked(mouseX, mouseY, visibleArea, guideActionListener)
 
     override fun draw(mouseX: Int, mouseY: Int, delta: Float, visibleArea: Rectangle) {
-        mouseInteractable?.isHovering(mouseX, mouseY, visibleArea)
+        val hovering = mouseInteractable?.isHovering(mouseX, mouseY, visibleArea)?:false
         val updatedColor = mouseInteractable?.updateColor(color) ?: color
         val updatedFormat = mouseInteractable?.updateFormat(format) ?: format
+        if (hovering) {
+            GuiGuideBook.drawLinkIndicator(mouseX, mouseY)
+        }
         GuiGuideBook.lpFontRenderer.drawString(string = str, x = left, y = top, color = updatedColor, format = updatedFormat, scale = scale)
     }
 
@@ -142,7 +145,7 @@ class LinkGroup(private val link: Link) : MouseInteractable {
     override fun updateColor(baseColor: Int): Int = MinecraftColor.BLUE.colorCode
 
     override fun updateFormat(baseFormat: Set<TextFormat>): Set<TextFormat> =
-        (if (hovered) baseFormat::minusElement else baseFormat::plusElement).invoke(TextFormat.Shadow)
+        (if (hovered) baseFormat::minusElement else baseFormat::plusElement).invoke(TextFormat.Underline)
 }
 
 internal fun splitAndInitialize(drawables: List<DrawableWord>, x: Int, y: Int, maxWidth: Int, justify: Boolean): Int {
